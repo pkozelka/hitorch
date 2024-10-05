@@ -1,3 +1,95 @@
-fn main() {
-    println!("Hello, world!");
+use std::path::PathBuf;
+use clap::{Parser, Subcommand};
+
+/// vLLM CLI - toy reimplementation in Rust
+#[derive(Parser)]
+#[command(version, about, long_about = None)]
+struct Cli {
+    #[command(subcommand)]
+    command: Commands,
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    /// Start the vLLM OpenAI Compatible API server
+    Serve {
+        /// If provided, the server will require this key to be presented in the header.
+        #[arg(long)]
+        api_key: Option<String>,
+        /// The model tag to serve
+        model_tag: String,
+        /// Read CLI options from a config file.
+        ///
+        /// Must be a YAML with the following options:
+        /// https://docs.vllm.ai/en/latest/serving/openai_compatible_server.html#command-line-arguments-for-the-serve
+        #[arg(long)]
+        config: PathBuf,
+        /// host name
+        #[arg(long)]
+        host: String,
+        /// port number
+        #[arg(long,default_value_t=8000)]
+        port: u16,
+        /// Name or path of the huggingface model to use.
+        #[arg(long)]
+        model: String,
+        /// Name or path of the huggingface tokenizer to use. If unspecified, model name or path will be used.
+        #[arg(long)]
+        tokenizer: String,
+        /// Random seed for operations.
+        #[arg(long)]
+        seed: Option<u64>,
+        ///   --dtype {auto,half,float16,bfloat16,float,float32}
+        /// Data type for model weights and activations.
+        /// * "auto" will use FP16 precision for FP32 and FP16 models, and BF16 precision for BF16 models.
+        /// * "half" for FP16. Recommended for AWQ quantization.
+        /// * "float16" is the same as "half".
+        /// * "bfloat16" for a balance between precision and range.
+        /// * "float" is shorthand for FP32 precision.
+        /// * "float32" for FP32 precision.
+        dtype: String,
+        // + many, many other options
+    },
+    /// Generate text completions based on the given prompt via the running API server
+    Complete {
+        /// url of the running OpenAI-Compatible RESTful API server
+        #[arg(long)]
+        url: String,
+        /// The model name used in prompt completion, default to the first model in list models API call.
+        #[arg(long)]
+        model_name: String,
+        /// API key for OpenAI services. If provided, this api key will overwrite the api key obtained through environment variables.
+        #[arg(long)]
+        api_key: String,
+    },
+    /// Generate chat completions via the running API server
+    Chat {
+        /// url of the running OpenAI-Compatible RESTful API server
+        #[arg(long)]
+        url: String,
+        /// The model name used in prompt completion, default to the first model in list models API call.
+        #[arg(long)]
+        model_name: String,
+        /// API key for OpenAI services. If provided, this api key will overwrite the api key obtained through environment variables.
+        #[arg(long)]
+        api_key: String,
+        /// The system prompt to be added to the chat template, used for models that support system prompts.
+        #[arg(long)]
+        system_prompt: String,
+    },
+}
+
+fn main() -> std::io::Result<()> {
+    let cli = Cli::parse();
+
+    // You can check for the existence of subcommands, and if found use their
+    // matches just as you would the top level cmd
+    match cli.command {
+        Commands::Serve { .. } => {}
+        Commands::Complete { .. } => {}
+        Commands::Chat { .. } => {}
+    }
+
+    // Continued program logic goes here...
+    Ok(())
 }
