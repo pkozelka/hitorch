@@ -12,7 +12,7 @@ pub async fn cmd_complete(url: &str, model_name: &str, api_key: &str, max_tokens
     let request = serde_json::to_string(&request)?;
     log::debug!("Request: {}", request);
     let response = reqwest::Client::new()
-        .post(format!("{url}/v1/completions"))
+        .post(format!("{url}/completions"))
         .header("Authorization", format!("Bearer {}", api_key))
         .body(request)
         .send().await?;
