@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 use clap::{Parser, Subcommand};
+use vrllm::cmd_complete;
 
 /// vLLM CLI - toy reimplementation in Rust
 #[derive(Parser)]
@@ -39,7 +40,6 @@ enum Commands {
         /// Random seed for operations.
         #[arg(long)]
         seed: Option<u64>,
-        ///   --dtype {auto,half,float16,bfloat16,float,float32}
         /// Data type for model weights and activations.
         /// * "auto" will use FP16 precision for FP32 and FP16 models, and BF16 precision for BF16 models.
         /// * "half" for FP16. Recommended for AWQ quantization.
@@ -56,11 +56,15 @@ enum Commands {
         #[arg(long)]
         url: String,
         /// The model name used in prompt completion, default to the first model in list models API call.
-        #[arg(long)]
+        #[arg(long, default_value = "gpt2")]
         model_name: String,
         /// API key for OpenAI services. If provided, this api key will overwrite the api key obtained through environment variables.
-        #[arg(long)]
+        #[arg(long, default_value = "")]
         api_key: String,
+        #[arg(long, default_value = "16")]
+        max_tokens: usize,
+        /// The prompt to be completed
+        prompt: String,
     },
     /// Generate chat completions via the running API server
     Chat {
@@ -79,17 +83,28 @@ enum Commands {
     },
 }
 
-fn main() -> std::io::Result<()> {
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     // You can check for the existence of subcommands, and if found use their
     // matches just as you would the top level cmd
     match cli.command {
-        Commands::Serve { .. } => {}
-        Commands::Complete { .. } => {}
-        Commands::Chat { .. } => {}
+        Commands::Serve { .. } => {
+            Ok(())
+        }
+        Commands::Complete { url, model_name, api_key, max_tokens, prompt } => {
+            // Call the completion function
+            let response = cmd_complete(&url, &model_name, &api_key, max_tokens, &prompt).await?;
+            for choice in response.choices {
+                println!("{}", choice.text);
+            }
+            Ok(())
+        }
+        Commands::Chat { .. } => {
+            Ok(())
+        }
     }
 
     // Continued program logic goes here...
-    Ok(())
 }
