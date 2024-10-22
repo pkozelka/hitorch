@@ -8,3 +8,8 @@ serve:
 
 vllm-complete:
 	vllm complete --url http://koturbo:8000/v1
+
+curl-complete:
+	curl http://localhost:8000/v1/completions -v \
+		-H "Content-Type: application/json" \
+		-d '{"model": "gpt2", "prompt": "Prague is"}'

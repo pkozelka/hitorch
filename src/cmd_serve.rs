@@ -1,7 +1,9 @@
-use std::path::PathBuf;
 use axum::http::StatusCode;
-use axum::Router;
+use axum::response::IntoResponse;
 use axum::routing::{get, post};
+use axum::Router;
+use reqwest::header;
+use std::path::PathBuf;
 
 pub(crate) async fn cmd_serve(_api_key: Option<String>, _model_tag: String, _config: PathBuf, host: String, port: u16, _model: String, _tokenizer: String,
                               _seed: Option<u64>, _dtype: String) -> anyhow::Result<()>{
@@ -37,8 +39,12 @@ async fn serve_v1_models() -> &'static str {
 }
 
 /// TODO implement completions here
-async fn serve_v1_completions(data: String) -> Result<String, StatusCode> {
+async fn serve_v1_completions(data: String) -> impl IntoResponse {
     // data contains something like: `{"model": "gpt2", "prompt": "Prague is"}`
     log::error!("TODO: /v1/completions with data: {data}");
-    Err(StatusCode::NOT_IMPLEMENTED)
+    (
+        StatusCode::INTERNAL_SERVER_ERROR,
+        [(header::CONTENT_TYPE, "text/plain")],
+        "Not implemented yet"
+    )
 }
