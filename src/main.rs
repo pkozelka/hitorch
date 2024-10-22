@@ -85,6 +85,10 @@ enum Commands {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    env_logger::builder()
+        .filter_level(log::LevelFilter::Debug)
+        .init();
+
     let cli = Cli::parse();
 
     // You can check for the existence of subcommands, and if found use their
@@ -97,7 +101,7 @@ async fn main() -> anyhow::Result<()> {
             // Call the completion function
             let response = cmd_complete(&url, &model_name, &api_key, max_tokens, &prompt).await?;
             for choice in response.choices {
-                println!("{}", choice.text);
+                println!("---\n{}\n---", choice.text);
             }
             Ok(())
         }
